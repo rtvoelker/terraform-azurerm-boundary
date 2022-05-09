@@ -2,10 +2,10 @@
 # The domain label is based on the resource group name
 resource "azurerm_public_ip" "boundary" {
   name                = local.pip_name
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
   location            = var.location
   allocation_method   = "Static"
-  domain_name_label   = lower(var.resource_group_name)
+  domain_name_label   = lower(azurerm_resource_group.keyvault.name)
   sku                 = "Standard"
   tags                = local.tags
 }
@@ -14,7 +14,7 @@ resource "azurerm_public_ip" "boundary" {
 resource "azurerm_lb" "boundary" {
   name                = local.lb_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
   sku                 = "Standard"
 
   frontend_ip_configuration {
@@ -49,7 +49,7 @@ resource "azurerm_network_interface_backend_address_pool_association" "worker" {
 
 # All health probe for controller nodes
 resource "azurerm_lb_probe" "controller_9200" {
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
   loadbalancer_id     = azurerm_lb.boundary.id
   name                = "port-9200"
   port                = 9200
@@ -57,7 +57,7 @@ resource "azurerm_lb_probe" "controller_9200" {
 
 # All health probe for worker nodes
 resource "azurerm_lb_probe" "worker_9202" {
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
   loadbalancer_id     = azurerm_lb.boundary.id
   name                = "port-9202"
   port                = 9202
@@ -65,7 +65,7 @@ resource "azurerm_lb_probe" "worker_9202" {
 
 # Add LB rule for the controllers
 resource "azurerm_lb_rule" "controller" {
-  resource_group_name            = var.resource_group_name
+  resource_group_name            = azurerm_resource_group.keyvault.name
   loadbalancer_id                = azurerm_lb.boundary.id
   name                           = "Controller"
   protocol                       = "Tcp"
@@ -78,7 +78,7 @@ resource "azurerm_lb_rule" "controller" {
 
 # Add LB rule for the workers
 resource "azurerm_lb_rule" "worker" {
-  resource_group_name            = var.resource_group_name
+  resource_group_name            = azurerm_resource_group.keyvault.name
   loadbalancer_id                = azurerm_lb.boundary.id
   name                           = "Worker"
   protocol                       = "Tcp"
@@ -93,7 +93,7 @@ resource "azurerm_lb_rule" "worker" {
 # This is so you can SSH into the controller to troubleshoot
 # deployment issues.
 resource "azurerm_lb_nat_rule" "controller" {
-  resource_group_name            = var.resource_group_name
+  resource_group_name            = azurerm_resource_group.keyvault.name
   loadbalancer_id                = azurerm_lb.boundary.id
   name                           = "ssh-controller"
   protocol                       = "Tcp"
@@ -113,7 +113,7 @@ resource "azurerm_network_interface_nat_rule_association" "controller" {
 # This is so you can SSH into the controller to troubleshoot
 # deployment issues.
 resource "azurerm_lb_nat_rule" "worker" {
-  resource_group_name            = var.resource_group_name
+  resource_group_name            = azurerm_resource_group.keyvault.name
   loadbalancer_id                = azurerm_lb.boundary.id
   name                           = "ssh-worker"
   protocol                       = "Tcp"

@@ -1,22 +1,24 @@
 variable "resource_group_name" {
+  default = "rg-boundary-poc"
   type        = string
   description = "Name of Azure resource group."
 }
 
 variable "location" {
+  default = "westeurope"
   type        = string
   description = "Location of Azure resource group."
 }
 
-variable "controller_subnet_id" {
-  type        = string
-  description = "Azure subnet ID for Boundary controllers."
-}
-
-variable "worker_subnet_id" {
-  type        = string
-  description = "Azure subnet ID for Boundary workers."
-}
+#variable "controller_subnet_id" {
+#  type        = string
+#  description = "Azure subnet ID for Boundary controllers."
+#}
+#
+#variable "worker_subnet_id" {
+#  type        = string
+#  description = "Azure subnet ID for Boundary workers."
+#}
 
 variable "controller_vm_size" {
   type        = string
@@ -60,15 +62,9 @@ variable "boundary_version" {
   description = "Version of Boundary to install. Default is `0.7.5`."
 }
 
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "List of tags to add to Boundary resources. Merged with module tags."
-}
-
 data "azurerm_client_config" "current" {}
-
 data "azuread_client_config" "current" {}
+data "azurerm_subscription" "current" {}
 
 resource "random_id" "id" {
   byte_length = 4
@@ -88,10 +84,7 @@ resource "random_string" "vault" {
 }
 
 locals {
-  tags = merge({
-    module = "joatmon08/terraform-azurerm-boundary"
-  }, var.tags)
-
+  tags = var.tags
   controller_net_nsg = "controller-net-${random_id.id.hex}"
   worker_net_nsg     = "worker-net-${random_id.id.hex}"
 
@@ -119,4 +112,69 @@ locals {
   cert_san = ["boundary-${random_id.id.hex}.${var.location}.cloudapp.azure.com"]
 
   db_password = random_password.database.result
+
+  subnet_service_endpoints = {
+    (var.subnet_names[0]) = ["Microsoft.KeyVault", "Microsoft.Sql"]
+    (var.subnet_names[1]) = ["Microsoft.KeyVault", "Microsoft.Sql"]
+    (var.subnet_names[2]) = ["Microsoft.Sql"]
+    (var.subnet_names[3]) = ["Microsoft.Sql"]
+  }
+
+  subnet_enforce_private_link_endpoint_network_policies = {
+    (var.subnet_names[1]) = true
+    (var.subnet_names[2]) = true
+    (var.subnet_names[3]) = true
+  }
+}
+
+variable "tags" {
+  type    = map(string)
+  default = {
+    purpose = "hashicorp-azure-zero-trust"
+  }
+  description = "List of tags to add to Boundary resources. Merged with module tags."
+}
+
+## For Virtual Network
+variable "address_space" {
+  type    = list(string)
+  default = ["10.0.0.0/16"]
+}
+
+variable "subnet_prefixes" {
+  type    = list(string)
+  default = [
+    "10.0.0.0/24",
+    "10.0.1.0/24",
+    "10.0.2.0/24",
+    "10.0.3.0/24"
+  ]
+}
+
+variable "subnet_names" {
+  type    = list(string)
+  default = [
+    "controllers",
+    "workers",
+    "targets",
+    "vault"
+  ]
+}
+
+variable "subnet_delegation" {
+  description = "A map of subnet name to delegation block on the subnet"
+  type        = map(map(any))
+  default     = {}
+}
+
+variable "subnet_enforce_private_link_endpoint_network_policies" {
+  description = "A map of subnet name to enable/disable private link endpoint network policies on the subnet."
+  type        = map(bool)
+  default     = {}
+}
+
+variable "subnet_enforce_private_link_service_network_policies" {
+  description = "A map of subnet name to enable/disable private link service network policies on the subnet."
+  type        = map(bool)
+  default     = {}
 }

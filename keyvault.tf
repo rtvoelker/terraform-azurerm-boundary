@@ -1,10 +1,8 @@
-
-
 # Create key vault and access policies
 resource "azurerm_key_vault" "boundary" {
   name                       = local.vault_name
   location                   = var.location
-  resource_group_name        = var.resource_group_name
+  resource_group_name        = azurerm_resource_group.keyvault.name
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   enabled_for_deployment     = true
   soft_delete_retention_days = 7
@@ -17,8 +15,8 @@ resource "azurerm_key_vault" "boundary" {
   network_acls {
     default_action             = "Deny"
     bypass                     = "AzureServices"
-    ip_rules                   = ["0.0.0.0/0"]
-    virtual_network_subnet_ids = [var.controller_subnet_id, var.worker_subnet_id]
+    ip_rules                   = ["${data.http.my_ip.body}/32"]
+    virtual_network_subnet_ids = [azurerm_subnet.boundery_infra_subnet[0].id, azurerm_subnet.boundery_infra_subnet[1].id]   #controller & worker subnet in order
   }
 
   tags = local.tags

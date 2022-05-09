@@ -5,7 +5,7 @@
 resource "azurerm_postgresql_server" "boundary" {
   name                = local.pg_name
   location            = var.location
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
 
   administrator_login          = var.db_username
   administrator_login_password = local.db_password
@@ -27,9 +27,9 @@ resource "azurerm_postgresql_server" "boundary" {
 #Lock down access to only the controller subnet
 resource "azurerm_postgresql_virtual_network_rule" "vnet" {
   name                = "postgresql-vnet-rule"
-  resource_group_name = var.resource_group_name
+  resource_group_name = azurerm_resource_group.keyvault.name
   server_name         = azurerm_postgresql_server.boundary.name
-  subnet_id           = var.controller_subnet_id
+  subnet_id           = azurerm_subnet.boundery_infra_subnet[0].id # contoller Subnet
 
   # Setting this to true for now, probably not necessary
   ignore_missing_vnet_service_endpoint = true

@@ -16,6 +16,7 @@ output "client_id" {
 
 output "client_secret" {
   value = azuread_service_principal_password.recovery_sp.value
+  sensitive = true
 }
 
 output "public_dns_name" {
