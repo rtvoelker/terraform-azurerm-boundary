@@ -1,3 +1,16 @@
+resource "azurerm_resource_group" "keyvault" {
+  location = var.location
+  name     = var.resource_group_name
+  tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
+}
+
+
 # Create key vault and access policies
 resource "azurerm_key_vault" "boundary" {
   name                       = local.vault_name
@@ -20,6 +33,12 @@ resource "azurerm_key_vault" "boundary" {
   }
 
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Access policy for controller VMs
@@ -117,6 +136,12 @@ resource "azurerm_key_vault_key" "keys" {
   ]
 
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Create a self-signed certificate in Key Vault for workers and controllers
@@ -171,5 +196,11 @@ resource "azurerm_key_vault_certificate" "boundary" {
   }
 
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 

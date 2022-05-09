@@ -83,8 +83,18 @@ resource "random_string" "vault" {
   special     = false
 }
 
+variable "creator" {
+  type = string
+  description = "name of original creator of the resource"
+}
 locals {
-  tags = var.tags
+  tags = {
+    "managed"     = "terraformed"
+    "creator"     = var.creator
+    "created"     = timestamp()
+    "part-of" = "boundary-infra"
+    "purpose" = "hashicorp-azure-zero-trust"
+  }
   controller_net_nsg = "controller-net-${random_id.id.hex}"
   worker_net_nsg     = "worker-net-${random_id.id.hex}"
 
@@ -125,14 +135,6 @@ locals {
     (var.subnet_names[2]) = true
     (var.subnet_names[3]) = true
   }
-}
-
-variable "tags" {
-  type    = map(string)
-  default = {
-    purpose = "hashicorp-azure-zero-trust"
-  }
-  description = "List of tags to add to Boundary resources. Merged with module tags."
 }
 
 ## For Virtual Network

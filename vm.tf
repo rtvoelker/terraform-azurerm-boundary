@@ -12,6 +12,12 @@ resource "azurerm_user_assigned_identity" "controller" {
 
   name = local.controller_user_id
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 resource "azurerm_user_assigned_identity" "worker" {
@@ -20,6 +26,12 @@ resource "azurerm_user_assigned_identity" "worker" {
 
   name = local.worker_user_id
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 ##################### CONTROLLER VM RESOURCES ###################################
@@ -31,6 +43,12 @@ resource "azurerm_availability_set" "controller" {
   platform_update_domain_count = 2
   managed                      = true
   tags                         = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 
@@ -44,10 +62,16 @@ resource "azurerm_network_interface" "controller" {
   ip_configuration {
     name                          = "internal"
 #    subnet_id                     = var.controller_subnet_id
-    subnet_id                     = azurerm_subnet.subnet[0].id
+    subnet_id                     = azurerm_subnet.boundery_infra_subnet[0].id
     private_ip_address_allocation = "Dynamic"
   }
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Associate the network interfaces from the controllers with the controller NSG
@@ -132,6 +156,12 @@ resource "azurerm_linux_virtual_machine" "controller" {
     })
   )
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 ##################### WORKER VM RESOURCES ###################################
@@ -146,10 +176,16 @@ resource "azurerm_network_interface" "worker" {
   ip_configuration {
     name                          = "internal"
 #    subnet_id                     = var.worker_subnet_id
-    subnet_id                     = azurerm_subnet.subnet[1].id
+    subnet_id                     = azurerm_subnet.boundery_infra_subnet[1].id
     private_ip_address_allocation = "Dynamic"
   }
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Associate the network interfaces from the workers with the worker NSG
@@ -233,4 +269,10 @@ resource "azurerm_linux_virtual_machine" "worker" {
 
   depends_on = [azurerm_linux_virtual_machine.controller]
   tags       = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }

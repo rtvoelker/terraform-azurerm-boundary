@@ -1,6 +1,13 @@
 resource "azurerm_resource_group" "boundery_infra" {
   location = var.location
   name     = "rg-vnet-boundary"
+  tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 resource "azurerm_virtual_network" "boundery_infra_vnet" {
@@ -8,7 +15,13 @@ resource "azurerm_virtual_network" "boundery_infra_vnet" {
   resource_group_name = azurerm_resource_group.boundery_infra.name
   location            = azurerm_resource_group.boundery_infra.location
   address_space       = var.address_space
-  tags                = var.tags
+  tags                = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 resource "azurerm_subnet" "boundery_infra_subnet" {
@@ -32,27 +45,3 @@ resource "azurerm_subnet" "boundery_infra_subnet" {
     }
   }
 }
-
-#output "subnet_ids" {
-#  value = azurerm_subnet.subnet[0].id
-#}
-
-#locals {
-#  azurerm_subnets = {
-#  for index, subnet in azurerm_subnet.subnet :
-#  subnet.name => subnet.id
-#  }
-#}
-
-#resource "azurerm_subnet_network_security_group_association" "vnet" {
-#  for_each                  = var.nsg_ids
-#  subnet_id                 = local.azurerm_subnets[each.key]
-#  network_security_group_id = each.value
-#}
-
-#resource "azurerm_subnet_route_table_association" "vnet" {
-#  for_each       = var.route_tables_ids
-#  route_table_id = each.value
-#  subnet_id      = local.azurerm_subnets[each.key]
-#}
-

@@ -17,7 +17,7 @@ data "http" "my_ip" {
 
 provider "azurerm" {
   subscription_id = ""
-  tenant_id       = "gst"
+  tenant_id       = ""
   features {
     log_analytics_workspace {
       permanently_delete_on_destroy = true
@@ -27,9 +27,4 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = true
     }
   }
-}
-
-resource "azurerm_resource_group" "keyvault" {
-  location = var.location
-  name     = var.resource_group_name
 }

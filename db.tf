@@ -22,6 +22,12 @@ resource "azurerm_postgresql_server" "boundary" {
   ssl_minimal_tls_version_enforced = "TLS1_2"
 
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 #Lock down access to only the controller subnet

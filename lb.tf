@@ -8,6 +8,12 @@ resource "azurerm_public_ip" "boundary" {
   domain_name_label   = lower(azurerm_resource_group.keyvault.name)
   sku                 = "Standard"
   tags                = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Create a load balancer for the workers and controllers to use
@@ -22,6 +28,12 @@ resource "azurerm_lb" "boundary" {
     public_ip_address_id = azurerm_public_ip.boundary.id
   }
   tags = local.tags
+  lifecycle {
+    ignore_changes = [
+      tags["creator"],
+      tags["created"],
+    ]
+  }
 }
 
 # Create two address pools for workers and controllers
