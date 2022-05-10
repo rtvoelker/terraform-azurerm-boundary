@@ -180,3 +180,27 @@ variable "subnet_enforce_private_link_service_network_policies" {
   type        = map(bool)
   default     = {}
 }
+
+# Azure AD Users
+variable "operators" {
+  type = map(object({
+    user_principal_name = string
+    display_name        = string
+    mail_nickname       = string
+  }))
+  description = "List of Boundary operator's Azure AD user attributes"
+}
+
+variable "database_admins" {
+  type = map(object({
+    user_principal_name = string
+    display_name        = string
+    mail_nickname       = string
+  }))
+  description = "List of Boundary database admin's Azure AD user attributes"
+}
+
+variable "database_name" {
+  type        = string
+  description = "Name of database for application"
+}
