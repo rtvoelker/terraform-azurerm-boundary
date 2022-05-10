@@ -12,6 +12,6 @@ help: ## This help dialog.
 login: ## login to tenant
 	az login --tenant rolandtvoelkergmail.onmicrosoft.com
 plan: ## terraform plan
-	terraform plan --out infraplan.tfplan
+	terraform plan --var-file=boundary.tfvars --out infraplan.tfplan
 apply: ## terraform apply
 	terraform apply "infraplan.tfplan"
